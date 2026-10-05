@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprende a Leer - Ficha de Sílabas</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fuentes Caligráficas e Infantiles -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playwrite+ES:wght@100..400&family=Playwrite+ES+Guides&family=Caveat:wght@600;700&family=Comic+Neue:wght@700&family=Fredoka:wght@500;600;700&family=Shantell+Sans:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        .font-escolar1 { font-family: 'Playwrite ES', cursive; font-weight: 400; }
+        .font-escolar1-guides { font-family: 'Playwrite ES Guides', cursive; font-weight: 400; }
+        .font-cursiva { font-family: 'Caveat', cursive; font-weight: 700; }
+        .font-infantil { font-family: 'Shantell Sans', cursive; font-weight: 700; }
+        .font-escolar { font-family: 'Comic Neue', cursive, sans-serif; font-weight: 700; }
+        .font-titulo { font-family: 'Fredoka', cursive, sans-serif; }
+
+        .pauta-escuela {
+            background-color: #fffef5;
+            background-image: 
+                linear-gradient(e90deg, rgba(239, 68, 68, 0.15) 1px, transparent 1px),
+                linear-gradient(#e0f2fe 1px, transparent 1px),
+                linear-gradient(#e0f2fe 1px, transparent 1px);
+            background-size: 100% 100%, 100% 28px, 100% 7px;
+        }
+
+        @keyframes pulse-gentle {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+        .animate-bounce-gentle { animation: pulse-gentle 2s infinite ease-in-out; }
+
+        .letter-card {
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+        }
+        .letter-card:hover { transform: translateY(-3px) scale(1.03); }
+        .letter-card:active { transform: translateY(2px) scale(0.96); }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-amber-50 min-h-screen font-escolar1 text-slate-800 flex flex-col justify-between selection:bg-pink-200">
+
+    <!-- HEADER / CONTROL SUPERIOR -->
+    <header class="bg-white/90 backdrop-blur border-b-4 border-amber-300 shadow-md sticky top-0 z-50 p-3 sm:p-4">
+        <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
+            
+            <div class="flex items-center gap-3">
+                <span class="text-3xl sm:text-4xl animate-bounce-gentle">✏️</span>
+                <div>
+                    <h1 class="text-xl sm:text-3xl font-bold font-titulo text-pink-600 tracking-wide drop-shadow-sm">
+                        Aprende a Leer
+                    </h1>
+                    <p class="text-xs sm:text-sm text-slate-500 font-titulo">Ficha interactiva de sílabas completas</p>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2 sm:gap-4 font-titulo text-xs sm:text-sm">
+                <div class="flex items-center gap-1.5 bg-amber-100/80 px-2.5 py-1.5 rounded-xl border border-amber-300 shadow-sm">
+                    <label for="fontSelect" class="font-bold text-amber-800">Letra:</label>
+                    <select id="fontSelect" class="bg-white rounded-lg px-2 py-1 text-slate-700 font-medium focus:ring-2 focus:ring-pink-400 outline-none cursor-pointer">
+                        <option value="font-escolar1" selected>Escolar 1 (Playwrite ES)</option>
+                        <option value="font-escolar1-guides">Escolar 1 con Guías</option>
+                        <option value="font-cursiva">Cursiva Ligada</option>
+                        <option value="font-infantil">Infantil Redonda</option>
+                        <option value="font-escolar">Imprenta Escolar</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-1.5 bg-pink-100/80 px-2.5 py-1.5 rounded-xl border border-pink-300 shadow-sm">
+                    <label for="voiceSelect" class="font-bold text-pink-800">Voz:</label>
+                    <select id="voiceSelect" class="bg-white rounded-lg px-2 py-1 text-slate-700 font-medium focus:ring-2 focus:ring-pink-400 outline-none cursor-pointer max-w-[140px] sm:max-w-[200px] truncate">
+                        <option value="">Cargando voces...</option>
+                    </select>
+                </div>
+
+                <button id="gameToggleBtn" onclick="toggleGameMode()" class="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold px-3 py-1.5 rounded-xl shadow-md transition-all active:scale-95 flex items-center gap-1.5">
+                    <span>🎮</span>
+                    <span id="gameBtnText">¡Jugar!</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- PANEL DE JUEGO -->
+    <div id="gamePanel" class="hidden bg-gradient-to-r from-purple-100 via-pink-100 to-indigo-100 border-b-4 border-purple-300 p-4 text-center shadow-inner">
+        <div class="max-w-2xl mx-auto flex flex-col items-center gap-2">
+            <span class="text-xs font-bold font-titulo uppercase tracking-wider text-purple-700 bg-purple-200 px-3 py-1 rounded-full">Modo Juego de Lectura</span>
+            <div id="gameTarget" class="text-2xl sm:text-4xl font-bold text-purple-900 font-titulo my-1">
+                Busca la sílaba: <span id="targetSyllable" class="text-pink-600 underline font-escolar1">ba</span>
+            </div>
+            <div class="flex items-center gap-3 mt-1">
+                <button onclick="repeatTarget()" class="bg-white hover:bg-purple-50 text-purple-700 px-3 py-1 rounded-lg border border-purple-300 text-sm font-titulo font-bold flex items-center gap-1 shadow-sm">
+                    🔊 Repetir Sonido
+                </button>
+                <div class="text-sm font-bold text-slate-600 font-titulo">
+                    Puntos: <span id="scoreText" class="text-pink-600 text-lg">0</span> ⭐
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FICHA DE LECTURA -->
+    <main class="max-w-6xl mx-auto p-3 sm:p-6 w-full flex-grow">
+        <div class="bg-white rounded-3xl p-4 sm:p-6 mb-6 shadow-md border-2 border-amber-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="text-center sm:text-left">
+                <h2 class="text-2xl sm:text-4xl font-bold font-titulo text-indigo-700">El Abecedario y sus Sílabas</h2>
+                <p class="text-slate-600 text-base sm:text-lg mt-1 font-titulo">Toca cualquier sílaba para escuchar cómo suena completa</p>
+            </div>
+            <div class="flex items-center gap-2 bg-amber-100 p-2.5 rounded-2xl border border-amber-300 text-amber-900 font-bold font-titulo text-sm sm:text-base">
+                <span class="text-2xl">💡</span>
+                <span>Consonante + Vocal = Sílaba</span>
+            </div>
+        </div>
+
+        <div id="syllablesContainer" class="pauta-escuela p-4 sm:p-8 rounded-3xl border-4 border-amber-200 shadow-xl flex flex-col gap-8">
+        </div>
+    </main>
+
+    <footer class="bg-white/80 border-t border-amber-200 py-3 text-center text-slate-500 font-titulo text-xs sm:text-sm mt-6">
+        Diseñado con cariño para el aprendizaje accesible de la lectura 💖
+    </footer>
+
+    <script>
+        const alphabetData = [
+            { consonants: "B", syllables: [{ text: "ba", example: "Barco", icon: "⛵" }, { text: "be", example: "Bebé", icon: "👶" }, { text: "bi", example: "Bici", icon: "🚲" }, { text: "bo", example: "Bola", icon: "⚽" }, { text: "bu", example: "Búho", icon: "🦉" }] },
+            { consonants: "C", syllables: [{ text: "ca", example: "Casa", icon: "🏠" }, { text: "ce", example: "Cebra", icon: "🦓" }, { text: "ci", example: "Cine", icon: "🎬" }, { text: "co", example: "Coche", icon: "🚗" }, { text: "cu", example: "Cuna", icon: "🛏️" }] },
+            { consonants: "D", syllables: [{ text: "da", example: "Dado", icon: "🎲" }, { text: "de", example: "Dedo", icon: "☝️" }, { text: "di", example: "Diente", icon: "🦷" }, { text: "do", example: "Delfín", icon: "🐬" }, { text: "du", example: "Dulce", icon: "🍬" }] },
+            { consonants: "F", syllables: [{ text: "fa", example: "Faro", icon: "🚨" }, { text: "fe", example: "Feo", icon: "👹" }, { text: "fi", example: "Fiesta", icon: "🎉" }, { text: "fo", example: "Foca", icon: "🦭" }, { text: "fu", example: "Fuego", icon: "🔥" }] },
+            { consonants: "G", syllables: [{ text: "ga", example: "Gato", icon: "🐱" }, { text: "ge", example: "Gema", icon: "💎" }, { text: "gi", example: "Girasol", icon: "🌻" }, { text: "go", example: "Goma", icon: "🧼" }, { text: "gu", example: "Gusanito", icon: "🐛" }] },
+            { consonants: "H", syllables: [{ text: "ha", example: "Hada", icon: "🧚" }, { text: "he", example: "Helado", icon: "🍦" }, { text: "hi", example: "Hilo", icon: "🧵" }, { text: "ho", example: "Hoja", icon: "🍃" }, { text: "hu", example: "Huevo", icon: "🥚" }] },
+            { consonants: "J", syllables: [{ text: "ja", example: "Jirafa", icon: "🦒" }, { text: "je", example: "Jefe", icon: "👔" }, { text: "ji", example: "Jinete", icon: "🏇" }, { text: "jo", example: "Joya", icon: "💍" }, { text: "ju", example: "Juguete", icon: "🧸" }] },
+            { consonants: "K", syllables: [{ text: "ka", example: "Koala", icon: "🐨" }, { text: "ke", example: "Ketchup", icon: "🥫" }, { text: "ki", example: "Kiwi", icon: "🥝" }, { text: "ko", example: "Kimonos", icon: "🥋" }, { text: "ku", example: "Kung Fu", icon: "🥋" }] },
+            { consonants: "L", syllables: [{ text: "la", example: "Lápiz", icon: "✏️" }, { text: "le", example: "León", icon: "🦁" }, { text: "li", example: "Limón", icon: "🍋" }, { text: "lo", example: "Lobo", icon: "🐺" }, { text: "lu", example: "Luna", icon: "🌙" }] },
+            { consonants: "M", syllables: [{ text: "ma", example: "Mano", icon: "🤚" }, { text: "me", example: "Mesa", icon: "🪑" }, { text: "mi", example: "Miel", icon: "🍯" }, { text: "mo", example: "Mono", icon: "🐒" }, { text: "mu", example: "Muñeca", icon: "🪆" }] },
+            { consonants: "N", syllables: [{ text: "na", example: "Nube", icon: "☁️" }, { text: "ne", example: "Nieve", icon: "❄️" }, { text: "ni", example: "Niño", icon: "👧" }, { text: "no", example: "Noche", icon: "🌃" }, { text: "nu", example: "Nube", icon: "☁️" }] },
+            { consonants: "Ñ", syllables: [{ text: "ña", example: "Ñandú", icon: "🦩" }, { text: "ñe", example: "Compañero", icon: "🤝" }, { text: "ñi", example: "Meñique", icon: "🤙" }, { text: "ño", example: "Moño", icon: "🎀" }, { text: "ñu", example: "Ñu", icon: "🐂" }] },
+            { consonants: "P", syllables: [{ text: "pa", example: "Pato", icon: "🦆" }, { text: "pe", example: "Perro", icon: "🐶" }, { text: "pi", example: "Pez", icon: "🐟" }, { text: "po", example: "Pollito", icon: "🐥" }, { text: "pu", example: "Puerta", icon: "🚪" }] },
+            { consonants: "Q", syllables: [{ text: "que", example: "Queso", icon: "🧀" }, { text: "qui", example: "Quijote", icon: "🛡️" }] },
+            { consonants: "R", syllables: [{ text: "ra", example: "Rana", icon: "🐸" }, { text: "re", example: "Reloj", icon: "⏰" }, { text: "ri", example: "Risa", icon: "😄" }, { text: "ro", example: "Rosa", icon: "🌹" }, { text: "ru", example: "Rueda", icon: "🛞" }] },
+            { consonants: "S", syllables: [{ text: "sa", example: "Sol", icon: "☀️" }, { text: "se", example: "Seta", icon: "🍄" }, { text: "si", example: "Silla", icon: "🪑" }, { text: "so", example: "Sopa", icon: "🍲" }, { text: "su", example: "Suelo", icon: "🌱" }] },
+            { consonants: "T", syllables: [{ text: "ta", example: "Taza", icon: "☕" }, { text: "te", example: "Tenedor", icon: "🍴" }, { text: "ti", example: "Tigre", icon: "🐯" }, { text: "to", example: "Tomate", icon: "🍅" }, { text: "tu", example: "Tucán", icon: "🦜" }] },
+            { consonants: "V", syllables: [{ text: "va", example: "Vaca", icon: "🐮" }, { text: "ve", example: "Vela", icon: "🕯️" }, { text: "vi", example: "Viento", icon: "🌬️" }, { text: "vo", example: "Volcán", icon: "🌋" }, { text: "vu", example: "Vuelo", icon: "✈️" }] },
+            { consonants: "W", syllables: [{ text: "wa", example: "Waffle", icon: "🧇" }, { text: "we", example: "Web", icon: "🌐" }, { text: "wi", example: "Wifi", icon: "📶" }, { text: "wo", example: "Wok", icon: "🍳" }, { text: "wu", example: "Wushu", icon: "🥋" }] },
+            { consonants: "X", syllables: [{ text: "xa", example: "Xilófono", icon: "🎼" }, { text: "xe", example: "Xenón", icon: "💡" }, { text: "xi", example: "Xilófono", icon: "🪗" }, { text: "xo", example: "Xoana", icon: "👧" }, { text: "xu", example: "Xerez", icon: "🍇" }] },
+            { consonants: "Y", syllables: [{ text: "ya", example: "Yate", icon: "🛥️" }, { text: "ye", example: "Yema", icon: "🍳" }, { text: "yi", example: "Yin", icon: "☯️" }, { text: "yo", example: "Yo-yo", icon: "🪀" }, { text: "yu", example: "Yoga", icon: "🧘" }] },
+            { consonants: "Z", syllables: [{ text: "za", example: "Zapato", icon: "👞" }, { text: "zo", example: "Zorro", icon: "🦊" }, { text: "zu", example: "Zumo", icon: "🧃" }] }
+        ];
+
+        // Mapeo fonético diseñado para engañar al motor TTS e impedir la pausa
+        const phoneticMap = {
+            'ba': 'bá.', 'be': 'bé.', 'bi': 'bí.', 'bo': 'bó.', 'bu': 'bú.',
+            'ca': 'cá.', 'ce': 'cé.', 'ci': 'cí.', 'co': 'có.', 'cu': 'cú.',
+            'da': 'dá.', 'de': 'dé.', 'di': 'dí.', 'do': 'dó.', 'du': 'dú.',
+            'fa': 'fá.', 'fe': 'fé.', 'fi': 'fí.', 'fo': 'fó.', 'fu': 'fú.',
+            'ga': 'gá.', 'ge': 'gé.', 'gi': 'gí.', 'go': 'gó.', 'gu': 'gú.',
+            'ha': 'á.',  'he': 'é.',  'hi': 'í.',  'ho': 'ó.',  'hu': 'ú.',
+            'ja': 'já.', 'je': 'jé.', 'ji': 'jí.', 'jo': 'jó.', 'ju': 'jú.',
+            'ka': 'ká.', 'ke': 'ké.', 'ki': 'kí.', 'ko': 'kó.', 'ku': 'kú.',
+            'la': 'lá.', 'le': 'lé.', 'li': 'lí.', 'lo': 'ló.', 'lu': 'lú.',
+            'ma': 'má.', 'me': 'mé.', 'mi': 'mí.', 'mo': 'mó.', 'mu': 'mú.',
+            'na': 'ná.', 'ne': 'né.', 'ni': 'ní.', 'no': 'nó.', 'nu': 'nú.',
+            'ña': 'ñá.', 'ñe': 'ñé.', 'ñi': 'ñí.', 'ño': 'ñó.', 'ñu': 'ñú.',
+            'pa': 'pá.', 'pe': 'pé.', 'pi': 'pí.', 'po': 'pó.', 'pu': 'pú.',
+            'que': 'ké.', 'qui': 'kí.',
+            'ra': 'rrá.', 're': 'rré.', 'ri': 'rrí.', 'ro': 'rró.', 'ru': 'rrú.',
+            'sa': 'sá.', 'se': 'sé.', 'si': 'sí.', 'so': 'só.', 'su': 'sú.',
+            'ta': 'tá.', 'te': 'té.', 'ti': 'tí.', 'to': 'tó.', 'tu': 'tú.',
+            'va': 'vá.', 've': 'vé.', 'vi': 'ví.', 'vo': 'vó.', 'vu': 'vú.',
+            'wa': 'guá.', 'we': 'güé.', 'wi': 'güí.', 'wo': 'guó.', 'wu': 'gú.',
+            'xa': 'sá.', 'xe': 'sé.', 'xi': 'sí.', 'xo': 'só.', 'xu': 'sú.',
+            'ya': 'llá.', 'ye': 'llé.', 'yi': 'llí.', 'yo': 'lló.', 'yu': 'llú.',
+            'za': 'zá.', 'zo': 'zó.', 'zu': 'zú.'
+        };
+
+        const colorPalettes = [
+            { bg: 'bg-pink-100/90', border: 'border-pink-300', text: 'text-pink-700', badge: 'bg-pink-500' },
+            { bg: 'bg-purple-100/90', border: 'border-purple-300', text: 'text-purple-700', badge: 'bg-purple-500' },
+            { bg: 'bg-blue-100/90', border: 'border-blue-300', text: 'text-blue-700', badge: 'bg-blue-500' },
+            { bg: 'bg-teal-100/90', border: 'border-teal-300', text: 'text-teal-700', badge: 'bg-teal-500' },
+            { bg: 'bg-emerald-100/90', border: 'border-emerald-300', text: 'text-emerald-700', badge: 'bg-emerald-500' },
+            { bg: 'bg-amber-100/90', border: 'border-amber-300', text: 'text-amber-700', badge: 'bg-amber-500' },
+            { bg: 'bg-orange-100/90', border: 'border-orange-300', text: 'text-orange-700', badge: 'bg-orange-500' }
+        ];
+
+        let synth = window.speechSynthesis;
+        let voices = [];
+        let selectedVoice = null;
+        let currentFontClass = 'font-escolar1';
+
+        let isGameMode = false;
+        let currentTarget = null;
+        let score = 0;
+        let allSyllablesList = [];
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderSyllables();
+            setupVoiceSynthesis();
+            setupFontChanger();
+        });
+
+        function setupFontChanger() {
+            const fontSelect = document.getElementById('fontSelect');
+            fontSelect.addEventListener('change', (e) => {
+                const newFont = e.target.value;
+                const container = document.getElementById('syllablesContainer');
+                container.classList.remove('font-escolar1', 'font-escolar1-guides', 'font-cursiva', 'font-infantil', 'font-escolar');
+                container.classList.add(newFont);
+                document.getElementById('targetSyllable').className = `text-pink-600 underline ${newFont}`;
+                currentFontClass = newFont;
+            });
+        }
+
+        function renderSyllables() {
+            const container = document.getElementById('syllablesContainer');
+            container.innerHTML = '';
+            allSyllablesList = [];
+
+            alphabetData.forEach((group, index) => {
+                const palette = colorPalettes[index % colorPalettes.length];
+                const groupEl = document.createElement('div');
+                groupEl.className = `${palette.bg} p-3 sm:p-5 rounded-2xl border-3 ${palette.border} shadow-md transition-all hover:shadow-lg`;
+
+                let syllablesHTML = '';
+                group.syllables.forEach(s => {
+                    allSyllablesList.push(s);
+                    syllablesHTML += `
+                        <button onclick="handleSyllableClick('${s.text}', '${s.example}', this)" 
+                                data-syllable="${s.text}"
+                                class="letter-card bg-white hover:bg-amber-50 rounded-2xl p-2 sm:p-3 flex flex-col items-center justify-center border-2 ${palette.border} shadow-sm cursor-pointer relative group active:scale-95">
+                            <span class="text-3xl sm:text-5xl font-bold ${palette.text} tracking-wide leading-tight">
+                                ${s.text}
+                            </span>
+                            <span class="text-xs sm:text-sm font-titulo text-slate-500 font-medium mt-1 flex items-center gap-1 opacity-90">
+                                <span>${s.icon}</span>
+                                <span>${s.example}</span>
+                            </span>
+                        </button>
+                    `;
+                });
+
+                groupEl.innerHTML = `
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="${palette.badge} text-white font-bold text-lg sm:text-xl w-9 h-9 sm:w-11 sm:h-11 rounded-full flex items-center justify-center font-titulo shadow-sm">
+                            ${group.consonants}
+                        </span>
+                        <span class="text-slate-600 font-bold font-titulo text-sm sm:text-base">
+                            Consonante ${group.consonants}
+                        </span>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5 sm:gap-4">
+                        ${syllablesHTML}
+                    </div>
+                `;
+                container.appendChild(groupEl);
+            });
+        }
+
+        function setupVoiceSynthesis() {
+            if (!('speechSynthesis' in window)) {
+                alert('Tu navegador no soporta síntesis de voz.');
+                return;
+            }
+
+            const populateVoices = () => {
+                voices = synth.getVoices().filter(v => v.lang.startsWith('es'));
+                const voiceSelect = document.getElementById('voiceSelect');
+                voiceSelect.innerHTML = '';
+
+                if (voices.length === 0) {
+                    voiceSelect.innerHTML = '<option value="">Voz por defecto</option>';
+                    return;
+                }
+
+                // Selección prioritaria de voces naturales fluidas en español
+                let defaultIndex = voices.findIndex(v => 
+                    v.name.includes('Google') || 
+                    v.name.includes('Helena') || 
+                    v.name.includes('Monica') || 
+                    v.name.includes('Jorge') || 
+                    v.name.includes('Paulina') ||
+                    v.name.includes('Spanish')
+                );
+                if (defaultIndex === -1) defaultIndex = 0;
+
+                voices.forEach((voice, i) => {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = `${voice.name} (${voice.lang})`;
+                    if (i === defaultIndex) option.selected = true;
+                    voiceSelect.appendChild(option);
+                });
+
+                selectedVoice = voices[defaultIndex];
+            };
+
+            populateVoices();
+            if (speechSynthesis.onvoiceschanged !== undefined) {
+                speechSynthesis.onvoiceschanged = populateVoices;
+            }
+
+            document.getElementById('voiceSelect').addEventListener('change', (e) => {
+                const idx = e.target.value;
+                selectedVoice = voices[idx] || null;
+            });
+        }
+
+        // Función optimizada para forzar emisión atómica del sonido
+        function speakSyllable(syllableText, callback) {
+            if (!synth) return;
+            synth.cancel();
+
+            // Transformación con punto al final y velocidad acelerada sutilmente
+            // Esto elimina la micro-pausa en el sintetizador TTS
+            const textToSpeak = phoneticMap[syllableText.toLowerCase()] || (syllableText + '.');
+            const utterance = new SpeechSynthesisUtterance(textToSpeak);
+            
+            if (selectedVoice) {
+                utterance.voice = selectedVoice;
+            }
+            utterance.lang = 'es-ES';
+            
+            // La combinación de rate = 1.05 y pitch = 1.05 obliga al sintetizador a emitir el sonido en una sola bocanada
+            utterance.rate = 1.05;  
+            utterance.pitch = 1.05; 
+
+            if (callback) {
+                utterance.onend = callback;
+            }
+
+            synth.speak(utterance);
+        }
+
+        function handleSyllableClick(syllable, example, element) {
+            element.classList.add('ring-4', 'ring-pink-400', 'scale-105');
+            setTimeout(() => {
+                element.classList.remove('ring-4', 'ring-pink-400', 'scale-105');
+            }, 350);
+
+            if (isGameMode) {
+                if (syllable.toLowerCase() === currentTarget.text.toLowerCase()) {
+                    score += 10;
+                    document.getElementById('scoreText').textContent = score;
+                    confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 } });
+
+                    speakSyllable(syllable, () => {
+                        setTimeout(nextGameTurn, 500);
+                    });
+                } else {
+                    speakSyllable(syllable);
+                }
+            } else {
+                speakSyllable(syllable);
+            }
+        }
+
+        function toggleGameMode() {
+            isGameMode = !isGameMode;
+            const gamePanel = document.getElementById('gamePanel');
+            const gameBtnText = document.getElementById('gameBtnText');
+
+            if (isGameMode) {
+                gamePanel.classList.remove('hidden');
+                gameBtnText.textContent = 'Salir del juego';
+                score = 0;
+                document.getElementById('scoreText').textContent = score;
+                nextGameTurn();
+            } else {
+                gamePanel.classList.add('hidden');
+                gameBtnText.textContent = '¡Jugar!';
+                synth.cancel();
+            }
+        }
+
+        function nextGameTurn() {
+            if (!isGameMode) return;
+            const randomIndex = Math.floor(Math.random() * allSyllablesList.length);
+            currentTarget = allSyllablesList[randomIndex];
+            document.getElementById('targetSyllable').textContent = currentTarget.text;
+            speakSyllable(currentTarget.text);
+        }
+
+        function repeatTarget() {
+            if (currentTarget) {
+                speakSyllable(currentTarget.text);
+            }
+        }
+    </script>
+</body>
+</html>
